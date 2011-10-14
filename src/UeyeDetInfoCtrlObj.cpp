@@ -88,3 +88,12 @@ void DetInfoCtrlObj::getDetectorModel(std::string& det_model)
 {
   det_model = m_cam->m_sensor_info.strSensorName;
 }
+void DetInfoCtrlObj::registerMaxImageSizeCallback(HwMaxImageSizeCallback& cb)
+{
+  m_cbk_gen.registerMaxImageSizeCallback(cb);
+}
+
+void DetInfoCtrlObj::unregisterMaxImageSizeCallback(HwMaxImageSizeCallback& cb)
+{
+  m_cbk_gen.unregisterMaxImageSizeCallback(cb);
+}

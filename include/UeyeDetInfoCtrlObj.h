@@ -10,7 +10,7 @@ namespace lima
   namespace Ueye
   {
     class Camera;
-    class DetInfoCtrlObj : public HwMaxImageSizeCallbackGen,public HwDetInfoCtrlObj
+    class DetInfoCtrlObj : public HwDetInfoCtrlObj
     {
       DEB_CLASS_NAMESPC(DebModCamera, "DetInfoCtrlObj","Ueye");
 
@@ -29,15 +29,8 @@ namespace lima
       virtual void getDetectorType(std::string& det_type);
       virtual void getDetectorModel(std::string& det_model);
       
-      virtual void registerMaxImageSizeCallback(HwMaxImageSizeCallback& cb)
-      {
-        m_cbk_gen.registerMaxImageSizeCallback(cb);
-      }
-
-      virtual void unregisterMaxImageSizeCallback(HwMaxImageSizeCallback& cb)
-      {
-        m_cbk_gen.unregisterMaxImageSizeCallback(cb);
-      }
+      virtual void registerMaxImageSizeCallback(HwMaxImageSizeCallback& cb);
+      virtual void unregisterMaxImageSizeCallback(HwMaxImageSizeCallback& cb);
 
     private:
       Camera* m_cam;

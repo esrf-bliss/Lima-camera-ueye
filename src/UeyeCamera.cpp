@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include "UeyeCamera.h"
-
+#include "UeyeVideoCtrlObj.h"
 
 using namespace lima;
 using namespace lima::Ueye;
@@ -21,7 +21,8 @@ private:
 Camera::Camera(int addresse) :
   m_quit(false),
   m_acq_thread(NULL),
-  m_acq_started(false)
+  m_acq_started(false),
+  m_video(NULL)
 {
   DEB_CONSTRUCTOR();
 
@@ -45,9 +46,20 @@ Camera::Camera(int addresse) :
 
   DEB_ALWAYS() << "Sensor name : " << m_sensor_info.strSensorName;
   if(m_sensor_info.nColorMode == IS_COLORMODE_BAYER)
-    DEB_ALWAYS() << "Color camera";
+    {
+      DEB_ALWAYS() << "Color camera";
+      if(IS_SUCCESS != is_SetColorMode(m_cam_id,IS_CM_BAYER_RG16))
+	{
+	  DEB_TRACE() << "Failed to set Bayer 16";
+	  if(IS_SUCCESS != is_SetColorMode(m_cam_id,IS_CM_BAYER_RG8))
+	    DEB_TRACE() << "Failed to set Bayer 8";
+	}
+    }
   else
-    DEB_ALWAYS() << "Monochrome camera";
+    {
+      DEB_ALWAYS() << "Monochrome camera";
+      is_SetColorMode(m_cam_id,IS_CM_MONO16);
+    }
 
   DEB_TRACE() << DEB_VAR3(m_sensor_info.nMaxWidth,
 			  m_sensor_info.nMaxHeight,
@@ -109,6 +121,18 @@ Camera::Camera(int addresse) :
       free(m_buffer[1]);
       
       THROW_HW_ERROR(Error) << "Couldn't add memory to sequence";
+    }
+  if(IS_SUCCESS != is_EnableEvent(m_cam_id,IS_SET_EVENT_FRAME))
+    {
+      is_ClearSequence(m_cam_id);
+
+      is_FreeImageMem(m_cam_id,m_buffer[0],m_buffer_id[0]); 
+      is_FreeImageMem(m_cam_id,m_buffer[1],m_buffer_id[1]);
+
+      free(m_buffer[0]);
+      free(m_buffer[1]);
+      
+      THROW_HW_ERROR(Error) << "Couldn't enable Event";
     }
   //Acquisition  Thread
   m_acq_thread = new _AcqThread(*this);
@@ -196,10 +220,27 @@ void Camera::_AcqThread::threadFunction()
       if(IS_SUCCESS == is_WaitEvent(m_cam.m_cam_id,IS_SET_EVENT_FRAME,1000))
 	{
 	  ++m_cam.m_last_frames_id;
-	  DEB_TRACE() << "Acq frame : " << m_cam.m_last_frames_id;
 
-	  if(m_cam.m_asked_frames_number &&
-	     m_cam.m_last_frames_id == m_cam.m_asked_frames_number - 1)
+	  bool m_continue_acq = false;
+	  if(m_cam.m_video)
+	    {
+	      void *imageBufferPt;
+	      if(IS_SUCCESS == is_GetImageMem(m_cam.m_cam_id,&imageBufferPt))
+		{
+		   DEB_TRACE() << "Acq frame : " << m_cam.m_last_frames_id;
+		   DEB_TRACE() << DEB_VAR1(imageBufferPt);
+		   VideoMode aMode;
+		   m_cam.m_video->getVideoMode(aMode);
+		   m_continue_acq = m_cam.m_video->callNewImage((char*)imageBufferPt,
+								m_cam.m_sensor_info.nMaxWidth,
+								m_cam.m_sensor_info.nMaxHeight,
+								aMode);
+		}
+	    }
+
+	  if(!m_continue_acq ||
+	     (m_cam.m_asked_frames_number &&
+	      m_cam.m_last_frames_id == m_cam.m_asked_frames_number - 1))
 	    m_cam.stopAcq();
 	}
     }

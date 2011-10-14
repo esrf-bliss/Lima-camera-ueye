@@ -29,6 +29,7 @@ namespace lima
 {
   namespace Ueye
   {
+    class VideoCtrlObj;
     class Camera
     {
       DEB_CLASS_NAMESPC(DebModCamera,"Camera","Ueye");
@@ -59,6 +60,7 @@ namespace lima
       int		m_last_frames_id;
       int		m_asked_frames_number;
       bool		m_acq_started;
+      VideoCtrlObj*	m_video;
     };
   }
 }

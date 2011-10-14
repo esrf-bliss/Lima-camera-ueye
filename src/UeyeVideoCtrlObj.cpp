@@ -36,7 +36,7 @@ void VideoCtrlObj::getVideoMode(VideoMode &aMode) const
     case IS_CM_BAYER_RG8: 	aMode = BAYER_RG8;break;
     case IS_CM_MONO16: 		aMode = Y16;break;
     case IS_CM_MONO8: 		aMode = Y8;break;
-    case IS_CM_RGB8_PACKED: 	aMode = RGB24;break;
+    case IS_SET_CM_RGB24: 	aMode = RGB24;break;
     case IS_CM_UYVY_PACKED: 	aMode = YUV422;break;
     default:
       THROW_HW_ERROR(Error) << "Unknowed video mode";

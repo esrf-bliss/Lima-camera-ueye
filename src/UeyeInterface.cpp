@@ -15,6 +15,8 @@ Interface::Interface(Camera *cam) :
   m_det_info = new DetInfoCtrlObj(cam);
   m_video = new VideoCtrlObj(cam);
   m_sync = new SyncCtrlObj(cam);
+
+  cam->m_video = m_video;
 }
 
 Interface::~Interface()
@@ -51,6 +53,7 @@ void Interface::startAcq()
 
   int aNbFrames;
   m_sync->getNbFrames(aNbFrames);
+  m_video->getBuffer().setStartTimestamp(Timestamp::now());
   m_cam->startAcq(aNbFrames);
 }
 
