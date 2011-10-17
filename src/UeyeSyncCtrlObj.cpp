@@ -51,7 +51,10 @@ void SyncCtrlObj::setExpTime(double exp_time)
 {
   DEB_MEMBER_FUNCT();
   DEB_PARAM() << DEB_VAR1(exp_time);
-  
+  double newFrameRate;
+  if(IS_SUCCESS != is_SetFrameRate (m_cam->m_cam_id,1/exp_time,&newFrameRate))
+    THROW_HW_ERROR(Error) << "Can't set frame rate";
+
   if(IS_SUCCESS != is_Exposure(m_cam->m_cam_id,IS_EXPOSURE_CMD_SET_EXPOSURE,
 			       &exp_time,sizeof(double)))
     THROW_HW_ERROR(Error) << "Can't set exposure time";
