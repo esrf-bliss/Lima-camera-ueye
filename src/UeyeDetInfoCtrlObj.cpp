@@ -95,9 +95,9 @@ void DetInfoCtrlObj::setCurrImageType(ImageType curr_image_type)
     THROW_HW_ERROR(Error) << "Couldn't set color mode to :" << DEB_VAR2(aMode,aNextMode);
 }
 
-void DetInfoCtrlObj::getPixelSize(double& pixel_size)
+void DetInfoCtrlObj::getPixelSize(double& x_size,double& y_size)
 {  
-  pixel_size = -1.;		// @todo don't know
+  x_size = y_size = -1.;		// @todo don't know
 }
 
 void DetInfoCtrlObj::getDetectorType(std::string& det_type)
