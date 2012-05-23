@@ -61,6 +61,7 @@ namespace lima
       int		m_asked_frames_number;
       bool		m_acq_started;
       VideoCtrlObj*	m_video;
+      HwInterface::Status::Basic m_status;
     };
   }
 }

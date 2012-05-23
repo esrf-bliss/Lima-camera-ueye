@@ -43,7 +43,8 @@ Camera::Camera(int addresse) :
   m_quit(false),
   m_acq_thread(NULL),
   m_acq_started(false),
-  m_video(NULL)
+  m_video(NULL),
+  m_status(HwInterface::Status::Ready)
 {
   DEB_CONSTRUCTOR();
 
@@ -208,8 +209,9 @@ int Camera::getNbAcquiredFrames() const
 
 void Camera::getStatus(HwInterface::StatusType &status)
 {
-  
+	status.set(m_status);
 }
+
 /*============================================================================
 			   Thread function
 ============================================================================*/
