@@ -40,12 +40,12 @@ namespace lima
     public:
       Camera(int addresse = 0);	// addresse == 0 first available
       ~Camera();
-      
       void reset();
       void startAcq(int nbFrames);
       void stopAcq();
       int getNbAcquiredFrames() const;
       void getStatus(HwInterface::StatusType& status);
+      bool isMonochrome() const;
     private:
       class _AcqThread;
       friend class _AcqThread;

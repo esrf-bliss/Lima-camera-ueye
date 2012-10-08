@@ -67,7 +67,7 @@ Camera::Camera(int addresse) :
     THROW_HW_ERROR(Error) << "Couldn't get sensor information";
 
   DEB_ALWAYS() << "Sensor name : " << m_sensor_info.strSensorName;
-  if(m_sensor_info.nColorMode == IS_COLORMODE_BAYER)
+  if(isMonochrome())
     {
       DEB_ALWAYS() << "Color camera";
       if(IS_SUCCESS != is_SetColorMode(m_cam_id,IS_CM_BAYER_RG16))
@@ -210,6 +210,13 @@ int Camera::getNbAcquiredFrames() const
 void Camera::getStatus(HwInterface::StatusType &status)
 {
 	status.set(m_status);
+}
+
+bool Camera::isMonochrome() const
+{
+  DEB_MEMBER_FUNCT();
+
+  return m_sensor_info.nColorMode == IS_COLORMODE_BAYER;
 }
 
 /*============================================================================
