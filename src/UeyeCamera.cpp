@@ -83,7 +83,13 @@ Camera::Camera(int addresse) :
     {
       DEB_ALWAYS() << "Monochrome camera";
       m_video_mode = Y16;
-      is_SetColorMode(m_cam_id,IS_CM_MONO16);
+      if(IS_SUCCESS != is_SetColorMode(m_cam_id,IS_CM_MONO16))
+	{
+	  DEB_TRACE() << "Failed to set Mono 16";
+	  m_video_mode = Y8;
+	  if(IS_SUCCESS != is_SetColorMode(m_cam_id,IS_CM_MONO8))
+	    DEB_TRACE() << "Failed to set Mono 8";
+	}
     }
 
   DEB_TRACE() << DEB_VAR3(m_sensor_info.nMaxWidth,
