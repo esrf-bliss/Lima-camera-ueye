@@ -70,9 +70,11 @@ Camera::Camera(int addresse) :
   if(isMonochrome())
     {
       DEB_ALWAYS() << "Color camera";
+      m_video_mode = BAYER_RG16;
       if(IS_SUCCESS != is_SetColorMode(m_cam_id,IS_CM_BAYER_RG16))
 	{
 	  DEB_TRACE() << "Failed to set Bayer 16";
+	  m_video_mode = BAYER_RG8;
 	  if(IS_SUCCESS != is_SetColorMode(m_cam_id,IS_CM_BAYER_RG8))
 	    DEB_TRACE() << "Failed to set Bayer 8";
 	}
@@ -80,6 +82,7 @@ Camera::Camera(int addresse) :
   else
     {
       DEB_ALWAYS() << "Monochrome camera";
+      m_video_mode = Y16;
       is_SetColorMode(m_cam_id,IS_CM_MONO16);
     }
 
@@ -217,6 +220,49 @@ bool Camera::isMonochrome() const
   DEB_MEMBER_FUNCT();
 
   return m_sensor_info.nColorMode == IS_COLORMODE_BAYER;
+}
+
+VideoMode Camera::getVideoMode() const
+{
+  DEB_MEMBER_FUNCT();
+  DEB_RETURN() << DEB_VAR1(m_video_mode);
+
+  return m_video_mode;
+}
+
+void Camera::setVideoMode(VideoMode aMode)
+{
+  DEB_MEMBER_FUNCT();
+  DEB_PARAM() << DEB_VAR1(aMode);
+  INT aColorMode;
+  ImageType anImageType;
+  switch(aMode)
+    {
+    case Y8:
+      aColorMode = IS_CM_MONO8;
+      anImageType = Bpp8;
+      break;
+    case Y16:
+      aColorMode = IS_CM_MONO16;
+      anImageType = Bpp16;
+      break;
+    case BAYER_RG8:
+      aColorMode = IS_CM_BAYER_RG8;
+      anImageType = Bpp8;
+      break;
+    case BAYER_RG16:
+      aColorMode = IS_CM_BAYER_RG16;
+      anImageType = Bpp16;
+      break;
+    default:
+      throw LIMA_HW_EXC(InvalidValue,"This video mode is not managed!");
+    }
+
+  if(IS_SUCCESS != is_SetColorMode(m_cam_id, aColorMode))
+    throw LIMA_HW_EXC(Error,"Can't change video mode");
+
+  m_video_mode = aMode;
+//  maxImageSizeChanged(Size(m_maxwidth,m_maxheight), anImageType);
 }
 
 /*============================================================================

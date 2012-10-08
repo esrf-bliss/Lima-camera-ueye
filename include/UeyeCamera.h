@@ -46,6 +46,8 @@ namespace lima
       int getNbAcquiredFrames() const;
       void getStatus(HwInterface::StatusType& status);
       bool isMonochrome() const;
+      VideoMode getVideoMode() const;
+      void 	setVideoMode(VideoMode);
     private:
       class _AcqThread;
       friend class _AcqThread;
@@ -61,6 +63,7 @@ namespace lima
       int		m_asked_frames_number;
       bool		m_acq_started;
       VideoCtrlObj*	m_video;
+      VideoMode		m_video_mode;
       HwInterface::Status::Basic m_status;
     };
   }
