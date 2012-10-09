@@ -90,22 +90,23 @@ void SyncCtrlObj::setExpTime(double exp_time)
 {
   DEB_MEMBER_FUNCT();
   DEB_PARAM() << DEB_VAR1(exp_time);
-  double newFrameRate;
-  if(IS_SUCCESS != is_SetFrameRate (m_cam->m_cam_id,1/exp_time,&newFrameRate))
-    THROW_HW_ERROR(Error) << "Can't set frame rate";
+  double exp_time_ms = 1000 * exp_time;
 
   if(IS_SUCCESS != is_Exposure(m_cam->m_cam_id,IS_EXPOSURE_CMD_SET_EXPOSURE,
-			       &exp_time,sizeof(double)))
+			       &exp_time_ms,sizeof(double)))
     THROW_HW_ERROR(Error) << "Can't set exposure time";
 }
 
 void SyncCtrlObj::getExpTime(double &exp_time)
 {
   DEB_MEMBER_FUNCT();
+  double exp_time_ms;
+
   if(IS_SUCCESS != is_Exposure(m_cam->m_cam_id,IS_EXPOSURE_CMD_GET_EXPOSURE,
-			       &exp_time,sizeof(double)))
+			       &exp_time_ms,sizeof(double)))
     THROW_HW_ERROR(Error) << "Can't get exposure time";
 
+  exp_time = 1000 * exp_time_ms;
   DEB_RETURN() << DEB_VAR1(exp_time);
 }
 
