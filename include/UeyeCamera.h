@@ -52,6 +52,8 @@ namespace lima
       class _AcqThread;
       friend class _AcqThread;
 
+      void 		_allocBuffer();
+
       HIDS 		m_cam_id;
       CAMINFO 		m_camera_info;
       SENSORINFO 	m_sensor_info;
@@ -64,6 +66,7 @@ namespace lima
       bool		m_acq_started;
       VideoCtrlObj*	m_video;
       VideoMode		m_video_mode;
+      ImageType		m_image_type;
       HwInterface::Status::Basic m_status;
     };
   }

@@ -71,10 +71,12 @@ Camera::Camera(int addresse) :
     {
       DEB_ALWAYS() << "Color camera";
       m_video_mode = BAYER_RG16;
+      m_image_type = Bpp16;
       if(IS_SUCCESS != is_SetColorMode(m_cam_id,IS_CM_BAYER_RG16))
 	{
 	  DEB_TRACE() << "Failed to set Bayer 16";
 	  m_video_mode = BAYER_RG8;
+	  m_image_type = Bpp8;
 	  if(IS_SUCCESS != is_SetColorMode(m_cam_id,IS_CM_BAYER_RG8))
 	    DEB_TRACE() << "Failed to set Bayer 8";
 	}
@@ -83,10 +85,12 @@ Camera::Camera(int addresse) :
     {
       DEB_ALWAYS() << "Monochrome camera";
       m_video_mode = Y16;
+      m_image_type = Bpp16;
       if(IS_SUCCESS != is_SetColorMode(m_cam_id,IS_CM_MONO16))
 	{
 	  DEB_TRACE() << "Failed to set Mono 16";
 	  m_video_mode = Y8;
+	  m_image_type = Bpp8;
 	  if(IS_SUCCESS != is_SetColorMode(m_cam_id,IS_CM_MONO8))
 	    DEB_TRACE() << "Failed to set Mono 8";
 	}
@@ -107,52 +111,8 @@ Camera::Camera(int addresse) :
   m_buffer[1] = (char*)malloc(m_sensor_info.nMaxWidth * 
 			      m_sensor_info.nMaxHeight *
 			      sizeof(int));
+  _allocBuffer();
 
-  if(IS_SUCCESS != is_SetAllocatedImageMem(m_cam_id,
-					   m_sensor_info.nMaxWidth,
-					   m_sensor_info.nMaxHeight,
-					   32,m_buffer[0],&m_buffer_id[0]))
-    {
-      free(m_buffer[0]);
-      free(m_buffer[1]);
-      THROW_HW_ERROR(Error) << "Couldn't set memory to harware";
-    }
-
-  if(IS_SUCCESS != is_SetAllocatedImageMem(m_cam_id,
-					   m_sensor_info.nMaxWidth,
-					   m_sensor_info.nMaxHeight,
-					   32,m_buffer[1],&m_buffer_id[1]))
-    {
-      is_FreeImageMem(m_cam_id,m_buffer[0],m_buffer_id[0]);
-      free(m_buffer[0]);
-      free(m_buffer[1]);
-
-      THROW_HW_ERROR(Error) << "Couldn't set memory to harware";
-    }
-  
-  if(IS_SUCCESS != is_AddToSequence(m_cam_id,m_buffer[0],m_buffer_id[0]))
-    {
-      is_FreeImageMem(m_cam_id,m_buffer[0],m_buffer_id[0]); 
-      is_FreeImageMem(m_cam_id,m_buffer[1],m_buffer_id[1]);
-
-      free(m_buffer[0]);
-      free(m_buffer[1]);
-      
-      THROW_HW_ERROR(Error) << "Couldn't add memory to sequence";
-    }
-
-  if(IS_SUCCESS != is_AddToSequence(m_cam_id,m_buffer[1],m_buffer_id[1]))
-    {
-      is_ClearSequence(m_cam_id);
-
-      is_FreeImageMem(m_cam_id,m_buffer[0],m_buffer_id[0]); 
-      is_FreeImageMem(m_cam_id,m_buffer[1],m_buffer_id[1]);
-
-      free(m_buffer[0]);
-      free(m_buffer[1]);
-      
-      THROW_HW_ERROR(Error) << "Couldn't add memory to sequence";
-    }
   if(IS_SUCCESS != is_EnableEvent(m_cam_id,IS_SET_EVENT_FRAME))
     {
       is_ClearSequence(m_cam_id);
@@ -242,6 +202,7 @@ void Camera::setVideoMode(VideoMode aMode)
   DEB_PARAM() << DEB_VAR1(aMode);
   INT aColorMode;
   ImageType anImageType;
+
   switch(aMode)
     {
     case Y8:
@@ -267,8 +228,66 @@ void Camera::setVideoMode(VideoMode aMode)
   if(IS_SUCCESS != is_SetColorMode(m_cam_id, aColorMode))
     throw LIMA_HW_EXC(Error,"Can't change video mode");
 
+  if (anImageType != m_image_type)
+    {
+      m_image_type = anImageType;
+      _allocBuffer();
+    }
+
   m_video_mode = aMode;
-//  maxImageSizeChanged(Size(m_maxwidth,m_maxheight), anImageType);
+}
+
+void Camera::_allocBuffer()
+{
+  DEB_MEMBER_FUNCT();
+  INT bitsPerPixel;
+
+  switch(m_image_type)
+    {
+    case Bpp8: bitsPerPixel = 8; break;
+    case Bpp16: bitsPerPixel = 16; break;
+    default: bitsPerPixel = 32; break;
+    }
+
+  is_ClearSequence(m_cam_id);
+  is_FreeImageMem(m_cam_id,m_buffer[0],m_buffer_id[0]);
+  is_FreeImageMem(m_cam_id,m_buffer[1],m_buffer_id[1]);
+
+  if(IS_SUCCESS != is_SetAllocatedImageMem(m_cam_id,
+					   m_sensor_info.nMaxWidth,
+					   m_sensor_info.nMaxHeight,
+					   bitsPerPixel,m_buffer[0],&m_buffer_id[0]))
+    {
+      THROW_HW_ERROR(Error) << "Couldn't set memory to harware";
+    }
+
+  if(IS_SUCCESS != is_SetAllocatedImageMem(m_cam_id,
+					   m_sensor_info.nMaxWidth,
+					   m_sensor_info.nMaxHeight,
+					   bitsPerPixel,m_buffer[1],&m_buffer_id[1]))
+    {
+      is_FreeImageMem(m_cam_id,m_buffer[0],m_buffer_id[0]);
+      THROW_HW_ERROR(Error) << "Couldn't set memory to harware";
+    }
+
+  if(IS_SUCCESS != is_AddToSequence(m_cam_id,m_buffer[0],m_buffer_id[0]))
+    {
+      is_FreeImageMem(m_cam_id,m_buffer[0],m_buffer_id[0]);
+      is_FreeImageMem(m_cam_id,m_buffer[1],m_buffer_id[1]);
+
+      THROW_HW_ERROR(Error) << "Couldn't add memory to sequence";
+    }
+
+  if(IS_SUCCESS != is_AddToSequence(m_cam_id,m_buffer[1],m_buffer_id[1]))
+    {
+      is_ClearSequence(m_cam_id);
+
+      is_FreeImageMem(m_cam_id,m_buffer[0],m_buffer_id[0]);
+      is_FreeImageMem(m_cam_id,m_buffer[1],m_buffer_id[1]);
+
+      THROW_HW_ERROR(Error) << "Couldn't add memory to sequence";
+    }
+
 }
 
 /*============================================================================
