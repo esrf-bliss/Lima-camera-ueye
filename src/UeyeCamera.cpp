@@ -86,7 +86,7 @@ Camera::Camera(int addresse) :
       DEB_ALWAYS() << "Monochrome camera";
       m_video_mode = Y16;
       m_image_type = Bpp16;
-      if(IS_SUCCESS != is_SetColorMode(m_cam_id,IS_CM_MONO16))
+      if(IS_SUCCESS != is_SetColorMode(m_cam_id,IS_CM_MONO12))
 	{
 	  DEB_TRACE() << "Failed to set Mono 16";
 	  m_video_mode = Y8;
@@ -115,16 +115,12 @@ Camera::Camera(int addresse) :
 
   if(IS_SUCCESS != is_EnableEvent(m_cam_id,IS_SET_EVENT_FRAME))
     {
-      is_ClearSequence(m_cam_id);
-
-      is_FreeImageMem(m_cam_id,m_buffer[0],m_buffer_id[0]); 
-      is_FreeImageMem(m_cam_id,m_buffer[1],m_buffer_id[1]);
-
       free(m_buffer[0]);
       free(m_buffer[1]);
       
       THROW_HW_ERROR(Error) << "Couldn't enable Event";
     }
+
   //Acquisition  Thread
   m_acq_thread = new _AcqThread(*this);
   m_acq_thread->start();
@@ -178,7 +174,16 @@ int Camera::getNbAcquiredFrames() const
 
 void Camera::getStatus(HwInterface::StatusType &status)
 {
-	status.set(m_status);
+  if (m_acq_started)
+    {
+      status.acq = AcqRunning;
+      status.det = DetExposure;
+    }
+  else
+    {
+      status.acq = AcqReady;
+      status.det = DetIdle;
+    }
 }
 
 bool Camera::isMonochrome() const
@@ -203,6 +208,9 @@ void Camera::setVideoMode(VideoMode aMode)
   INT aColorMode;
   ImageType anImageType;
 
+  if (aMode == m_video_mode)
+	  return;
+
   switch(aMode)
     {
     case Y8:
@@ -210,7 +218,7 @@ void Camera::setVideoMode(VideoMode aMode)
       anImageType = Bpp8;
       break;
     case Y16:
-      aColorMode = IS_CM_MONO16;
+      aColorMode = IS_CM_MONO12;
       anImageType = Bpp16;
       break;
     case BAYER_RG8:
@@ -225,13 +233,27 @@ void Camera::setVideoMode(VideoMode aMode)
       throw LIMA_HW_EXC(InvalidValue,"This video mode is not managed!");
     }
 
+  if (m_acq_started)
+    {
+      DEB_TRACE() << "Acquisition in progress, stopping";
+      if (IS_SUCCESS != is_StopLiveVideo(m_cam_id, IS_WAIT))
+	THROW_HW_ERROR(Error) << "Can't stop acquisition";
+    }
+
   if(IS_SUCCESS != is_SetColorMode(m_cam_id, aColorMode))
-    throw LIMA_HW_EXC(Error,"Can't change video mode");
+	  THROW_HW_ERROR(Error) << "Can't change video mode";
 
   if (anImageType != m_image_type)
     {
       m_image_type = anImageType;
       _allocBuffer();
+    }
+
+  if (m_acq_started)
+    {
+      DEB_TRACE() << "Restarting acquisition";
+      if (IS_SUCCESS != is_CaptureVideo(m_cam_id,IS_DONT_WAIT))
+	THROW_HW_ERROR(Error) << "Can't start acquisition";
     }
 
   m_video_mode = aMode;
@@ -244,9 +266,26 @@ void Camera::_allocBuffer()
 
   switch(m_image_type)
     {
-    case Bpp8: bitsPerPixel = 8; break;
-    case Bpp16: bitsPerPixel = 16; break;
-    default: bitsPerPixel = 32; break;
+  case Bpp8:
+  case Bpp8S:
+	  bitsPerPixel = 8; break;
+  case Bpp10:
+  case Bpp10S:
+	  bitsPerPixel = 10; break;
+  case Bpp12:
+  case Bpp12S:
+	  bitsPerPixel = 12; break;
+  case Bpp14:
+  case Bpp14S:
+	  bitsPerPixel = 14; break;
+  case Bpp16:
+  case Bpp16S:
+	  bitsPerPixel = 16; break;
+  case Bpp32:
+  case Bpp32S:
+	  bitsPerPixel = 32; break;
+  default:
+	  THROW_HW_ERROR(InvalidValue) << "Unknown image type";
     }
 
   is_ClearSequence(m_cam_id);
