@@ -42,8 +42,8 @@ namespace lima
       virtual void setLive(bool);
       virtual void getLive(bool&) const;
 
-      virtual void getGain(double&) const {};
-      virtual void setGain(double) {};
+      virtual void getGain(double&) const;
+      virtual void setGain(double);
 
       virtual void checkBin(Bin& bin);
       virtual void checkRoi(const Roi& set_roi, Roi& hw_roi);

@@ -47,7 +47,9 @@ namespace lima
       void getStatus(HwInterface::StatusType& status);
       bool isMonochrome() const;
       VideoMode getVideoMode() const;
-      void 	setVideoMode(VideoMode);
+      void 	setVideoMode(VideoMode aMode);
+      double getGain() const;
+      void 	setGain(double aGain);
     private:
       class _AcqThread;
       friend class _AcqThread;

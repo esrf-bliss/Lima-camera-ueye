@@ -259,6 +259,41 @@ void Camera::setVideoMode(VideoMode aMode)
   m_video_mode = aMode;
 }
 
+double Camera::getGain() const
+{
+	DEB_MEMBER_FUNCT();
+	double aGain;
+	int masterGain = is_SetHardwareGain (m_cam_id,
+				IS_GET_MASTER_GAIN,
+				IS_IGNORE_PARAMETER,
+				IS_IGNORE_PARAMETER,
+				IS_IGNORE_PARAMETER);
+
+	aGain = double(masterGain) / 100;
+
+	DEB_RETURN() << DEB_VAR1(aGain);
+	return aGain;
+}
+
+void Camera::setGain(double aGain)
+{
+	DEB_MEMBER_FUNCT();
+	DEB_PARAM() << DEB_VAR1(aGain);
+
+	int masterGain;
+	if (aGain < 0)
+		masterGain = IS_SET_ENABLE_AUTO_GAIN;
+	else
+		masterGain = int(100 * aGain);
+
+	if (IS_SUCCESS != is_SetHardwareGain (m_cam_id,
+			masterGain,
+			IS_IGNORE_PARAMETER,
+			IS_IGNORE_PARAMETER,
+			IS_IGNORE_PARAMETER))
+		THROW_HW_ERROR(Error) << "Can't start acquisition";
+}
+
 void Camera::_allocBuffer()
 {
   DEB_MEMBER_FUNCT();

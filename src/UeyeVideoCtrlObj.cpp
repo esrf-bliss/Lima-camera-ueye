@@ -70,6 +70,16 @@ void VideoCtrlObj::getLive(bool &flag) const
   flag = m_live_flag;
 }
 
+void VideoCtrlObj::getGain(double &aGain) const
+{
+	aGain = m_cam->getGain();
+}
+
+void VideoCtrlObj::setGain(double aGain)
+{
+	m_cam->setGain(aGain);
+}
+
 void VideoCtrlObj::checkBin(Bin& bin)
 {
   bin = Bin(1,1);		// Do not manage Hw Bin
