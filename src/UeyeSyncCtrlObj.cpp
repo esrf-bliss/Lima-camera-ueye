@@ -42,11 +42,16 @@ bool SyncCtrlObj::checkTrigMode(TrigMode trig_mode)
   DEB_MEMBER_FUNCT();
   DEB_PARAM() << DEB_VAR1(trig_mode);
 
+  INT supported_modes = is_SetExternalTrigger(m_cam->m_cam_id, IS_GET_SUPPORTED_TRIGGER_MODE);
+
   switch(trig_mode)
     {
     case IntTrig:
     case IntTrigMult:
-      return true;
+      return (supported_modes & IS_SET_TRIGGER_SOFTWARE) > 0;
+    case ExtTrigSingle:
+    case ExtTrigMult:
+      return (supported_modes & IS_SET_TRIGGER_HI_LO) > 0;
     default:
       return false;
     }
@@ -57,10 +62,23 @@ void SyncCtrlObj::setTrigMode(TrigMode trig_mode)
   DEB_MEMBER_FUNCT();
   DEB_PARAM() << DEB_VAR1(trig_mode);
 
-  if(checkTrigMode(trig_mode))
-    m_trig_mode = trig_mode;
-  else
-    throw LIMA_HW_EXC(NotSupported,"Trigger type not supported");
+  int mode = 0;
+  switch(trig_mode)
+    {
+    case IntTrig:
+    case IntTrigMult:
+      mode = IS_SET_TRIGGER_SOFTWARE;
+      break;
+    case ExtTrigSingle:
+    case ExtTrigMult:
+      mode = IS_SET_TRIGGER_HI_LO;
+      break;
+    default:
+      THROW_HW_ERROR(NotSupported) << "Trigger type not supported";
+    }
+
+  if(IS_SUCCESS != is_SetExternalTrigger(m_cam->m_cam_id, mode))
+    THROW_HW_ERROR(Error) << "Can't set trigger mode";
 }
 
 void SyncCtrlObj::getTrigMode(TrigMode &trig_mode)
