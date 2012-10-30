@@ -50,6 +50,7 @@ Camera::Camera(int addresse) :
 
   m_cam_id = addresse;
   INT nRet = is_InitCamera(&m_cam_id,NULL);
+
   if(nRet != IS_SUCCESS)
     THROW_HW_ERROR(Error) << "Camera with addresse : " 
 			  << addresse << " is not found";
@@ -96,11 +97,35 @@ Camera::Camera(int addresse) :
 	}
     }
 
-  DEB_TRACE() << DEB_VAR3(m_sensor_info.nMaxWidth,
+  double pval1, pval2;
+  int errno;
+  char *errstr;
+  if (IS_SUCCESS != is_SetAutoParameter (m_cam_id, IS_GET_ENABLE_AUTO_GAIN, &pval1, &pval2))
+	  DEB_ALWAYS() << "Failed to get auto gain control setting";
+  else
+	  DEB_ALWAYS() << "auto gain: " << pval1;
+
+  pval1 = 1;
+  if (IS_SUCCESS != is_SetAutoParameter (m_cam_id, IS_SET_ENABLE_AUTO_GAIN, &pval1, &pval2))
+	  DEB_ALWAYS() << "Failed to set auto gain control";
+
+  if (IS_SUCCESS != is_SetAutoParameter (m_cam_id, IS_GET_ENABLE_AUTO_FRAMERATE, &pval1, &pval2))
+	  DEB_ALWAYS() << "Failed to get auto framerate control setting";
+  else
+	  DEB_ALWAYS() << "auto framerate: " << pval1;
+
+  pval1 = 1;
+  if (IS_SUCCESS != is_SetAutoParameter (m_cam_id, IS_SET_ENABLE_AUTO_FRAMERATE, &pval1, &pval2))
+  {
+	  is_GetError (m_cam_id, &errno, &errstr);
+	  DEB_ALWAYS() << "Failed to set auto frame rate control: " << errstr;
+  }
+  DEB_ALWAYS() << DEB_VAR4(m_sensor_info.nMaxWidth,
 			  m_sensor_info.nMaxHeight,
-			  m_sensor_info.bGlobShutter);
-  //m_sensor_info.wPixelSize);
-  DEB_TRACE() << DEB_VAR4(m_sensor_info.bMasterGain,
+			  m_sensor_info.bGlobShutter,
+			  m_sensor_info.wPixelSize);
+
+  DEB_ALWAYS() << DEB_VAR4(m_sensor_info.bMasterGain,
 			  m_sensor_info.bRGain,
 			  m_sensor_info.bGGain,
 			  m_sensor_info.bBGain);
