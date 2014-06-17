@@ -1,3 +1,5 @@
+.. _camera-ueye:
+
 Ueye
 -------
 .. image:: ids.jpg
