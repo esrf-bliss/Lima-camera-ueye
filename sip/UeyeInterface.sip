@@ -27,7 +27,7 @@ namespace Ueye
 #include <UeyeInterface.h>
 %End
   public:
-    Interface(Ueye::Camera*);
+    Interface(Ueye::Camera* /KeepReference/);
     virtual ~Interface();
 
     virtual void getCapList(std::vector<HwCap> &cap_list /Out/) const;
