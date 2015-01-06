@@ -22,7 +22,7 @@
 #ifndef UEYEINTERFACE_H
 #define UEYEINTERFACE_H
 
-#include "HwInterface.h"
+#include "lima/HwInterface.h"
 
 namespace lima
 {

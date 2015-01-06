@@ -21,7 +21,7 @@
 //###########################################################################
 #ifndef UEYEVIDEOCTRLOBJ_H
 #define UEYEVIDEOCTRLOBJ_H
-#include "HwVideoCtrlObj.h"
+#include "lima/HwVideoCtrlObj.h"
 
 namespace lima
 {

@@ -22,9 +22,9 @@
 #ifndef UEYEDETINFOCTRLOBJ_H
 #define UEYEDETINFOCTRLOBJ_H
 
-#include "HwDetInfoCtrlObj.h"
-#include "HwMaxImageSizeCallback.h"
-#include "Debug.h"
+#include "lima/HwDetInfoCtrlObj.h"
+#include "lima/HwMaxImageSizeCallback.h"
+#include "lima/Debug.h"
 
 namespace lima
 {

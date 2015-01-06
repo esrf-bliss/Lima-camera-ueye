@@ -22,7 +22,7 @@
 #ifndef UEYESYNCCTRLOBJ_H
 #define UEYESYNCCTRLOBJ_H
 
-#include "HwSyncCtrlObj.h"
+#include "lima/HwSyncCtrlObj.h"
 
 namespace lima
 {

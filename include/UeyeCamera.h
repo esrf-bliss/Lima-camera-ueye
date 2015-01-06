@@ -22,8 +22,8 @@
 #ifndef UEYECAMERA_H
 #define UEYECAMERA_H
 #include <ueye.h>
-#include "HwMaxImageSizeCallback.h"
-#include "HwInterface.h"
+#include "lima/HwMaxImageSizeCallback.h"
+#include "lima/HwInterface.h"
 
 namespace lima
 {
