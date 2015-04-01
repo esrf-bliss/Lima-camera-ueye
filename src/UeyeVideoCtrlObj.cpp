@@ -37,10 +37,18 @@ void VideoCtrlObj::getSupportedVideoMode(std::list<VideoMode> &aList) const
 {
   aList.push_back(Y8);
   aList.push_back(Y16);
-  if(m_cam->isMonochrome())
+  if(!m_cam->isMonochrome())
     {
-      aList.push_back(BAYER_RG8);
-      aList.push_back(BAYER_RG16);
+      if(m_cam->m_sensor_info.nUpperLeftBayerPixel == BAYER_PIXEL_RED)
+	{
+	  aList.push_back(BAYER_RG8);
+	  aList.push_back(BAYER_RG16);
+	}
+      else if(m_cam->m_sensor_info.nUpperLeftBayerPixel == BAYER_PIXEL_BLUE)
+	{
+	  aList.push_back(BAYER_BG8);
+	  aList.push_back(BAYER_BG16);
+	}
       aList.push_back(RGB24);
       aList.push_back(YUV422);
     }

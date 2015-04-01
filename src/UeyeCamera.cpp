@@ -71,15 +71,51 @@ Camera::Camera(int addresse) :
   if(isMonochrome())
     {
       DEB_ALWAYS() << "Color camera";
-      m_video_mode = BAYER_RG16;
-      m_image_type = Bpp16;
-      if(IS_SUCCESS != is_SetColorMode(m_cam_id,IS_CM_BAYER_RG16))
+      // In Lima we manage only BAYER_RG and BAYER_BG
+      if(m_sensor_info.nUpperLeftBayerPixel == BAYER_PIXEL_RED ||
+	 m_sensor_info.nUpperLeftBayerPixel == BAYER_PIXEL_BLUE)
 	{
-	  DEB_TRACE() << "Failed to set Bayer 16";
-	  m_video_mode = BAYER_RG8;
+	  struct initVideoMode
+	  {
+	    int		cm_mode;
+	    int		pixel_size;
+	    const char* mode_name;
+	  };
+	  static const initVideoMode initMode[] = {{IS_CM_SENSOR_RAW16,16,"RAW16"},
+						   {IS_CM_SENSOR_RAW12,16,"RAW12"},
+						   {IS_CM_SENSOR_RAW10,16,"RAW10"},
+						   {IS_CM_SENSOR_RAW8,8,"RAW8"},
+						   {-1,-1,NULL}};
+	  bool succeded = false;
+	  for(const initVideoMode* p = initMode;p->cm_mode >= 0;++p)
+	    {
+	      if(IS_SUCCESS == is_SetColorMode(m_cam_id,p->cm_mode))
+		{
+		  if(p->pixel_size == 16)
+		    {
+		      m_video_mode = m_sensor_info.nUpperLeftBayerPixel == BAYER_PIXEL_RED ?
+			BAYER_RG16 : BAYER_BG16;
+		      m_image_type = Bpp16;
+		    }
+		  else
+		    {
+		      m_video_mode = m_sensor_info.nUpperLeftBayerPixel == BAYER_PIXEL_RED ?
+			BAYER_RG8 : BAYER_BG8;
+		      m_image_type = Bpp8;
+		    }
+		  DEB_ALWAYS() << "Init in " << p->mode_name << "," << DEB_VAR2(m_video_mode,m_image_type);
+		  succeded = true;break;
+		}
+	    }
+	  if(!succeded)
+	    THROW_HW_ERROR(Error) << "Unable to initialize camera video mode";
+	}
+      else
+	{
+	  if(IS_SUCCESS != is_SetColorMode(m_cam_id,IS_CM_UYVY_PACKED))
+	    THROW_HW_ERROR(Error) << "Can't initialize color camera mode";
+	  m_video_mode = YUV422;
 	  m_image_type = Bpp8;
-	  if(IS_SUCCESS != is_SetColorMode(m_cam_id,IS_CM_BAYER_RG8))
-	    DEB_TRACE() << "Failed to set Bayer 8";
 	}
     }
   else
@@ -247,11 +283,27 @@ void Camera::setVideoMode(VideoMode aMode)
       anImageType = Bpp16;
       break;
     case BAYER_RG8:
-      aColorMode = IS_CM_BAYER_RG8;
+      if(m_sensor_info.nUpperLeftBayerPixel != BAYER_PIXEL_RED)
+	THROW_HW_ERROR(InvalidValue) << "This video mode is not managed!";
+      aColorMode = IS_CM_SENSOR_RAW8;
       anImageType = Bpp8;
       break;
     case BAYER_RG16:
-      aColorMode = IS_CM_BAYER_RG16;
+      if(m_sensor_info.nUpperLeftBayerPixel != BAYER_PIXEL_RED)
+	THROW_HW_ERROR(InvalidValue) << "This video mode is not managed!";
+      aColorMode = IS_CM_SENSOR_RAW16;
+      anImageType = Bpp16;
+      break;
+    case BAYER_BG8:
+      if(m_sensor_info.nUpperLeftBayerPixel != BAYER_PIXEL_BLUE)
+	THROW_HW_ERROR(InvalidValue) << "This video mode is not managed!";
+      aColorMode = IS_CM_SENSOR_RAW8;
+      anImageType = Bpp8;
+      break;
+    case BAYER_BG16:
+      if(m_sensor_info.nUpperLeftBayerPixel != BAYER_PIXEL_BLUE)
+	THROW_HW_ERROR(InvalidValue) << "This video mode is not managed!";
+      aColorMode = IS_CM_SENSOR_RAW16;
       anImageType = Bpp16;
       break;
     default:

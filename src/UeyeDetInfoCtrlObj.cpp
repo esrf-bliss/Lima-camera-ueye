@@ -56,7 +56,9 @@ void DetInfoCtrlObj::getCurrImageType(ImageType& curr_image_type)
   INT aColorMode = is_SetColorMode(m_cam->m_cam_id,IS_GET_COLOR_MODE);
   switch(aColorMode)
     {
-    case IS_CM_BAYER_RG16:
+    case IS_CM_SENSOR_RAW16:
+    case IS_CM_SENSOR_RAW12:
+    case IS_CM_SENSOR_RAW10:
     case IS_CM_MONO16:
       curr_image_type = Bpp16;
       break;
@@ -79,13 +81,13 @@ void DetInfoCtrlObj::setCurrImageType(ImageType curr_image_type)
       if(aMode == IS_CM_MONO8 || aMode == IS_CM_MONO16)
 	aNextMode = IS_CM_MONO16;
       else
-	aNextMode = IS_CM_BAYER_RG16;
+	aNextMode = IS_CM_SENSOR_RAW16;
       break;
     case Bpp8:
       if(aMode == IS_CM_MONO8 || aMode == IS_CM_MONO16)
 	aNextMode = IS_CM_MONO8;
-      else if(aMode == IS_CM_BAYER_RG16)
-	aNextMode = IS_CM_BAYER_RG8;
+      else if(aMode == IS_CM_SENSOR_RAW16)
+	aNextMode = IS_CM_SENSOR_RAW8;
       break;
     default:
       throw LIMA_HW_EXC(InvalidValue,"This image type is not Managed");
