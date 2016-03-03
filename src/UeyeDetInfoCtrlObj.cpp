@@ -53,12 +53,17 @@ void DetInfoCtrlObj::getDefImageType(ImageType& def_image_type)
 
 void DetInfoCtrlObj::getCurrImageType(ImageType& curr_image_type)
 {
+  DEB_MEMBER_FUNCT();
+  
   INT aColorMode = is_SetColorMode(m_cam->m_cam_id,IS_GET_COLOR_MODE);
+  DEB_PARAM() << DEB_VAR1(aColorMode);
+  
   switch(aColorMode)
     {
     case IS_CM_SENSOR_RAW16:
     case IS_CM_SENSOR_RAW12:
     case IS_CM_SENSOR_RAW10:
+    case IS_CM_MONO12:
     case IS_CM_MONO16:
       curr_image_type = Bpp16;
       break;
@@ -66,6 +71,7 @@ void DetInfoCtrlObj::getCurrImageType(ImageType& curr_image_type)
       curr_image_type = Bpp8;
       break;
     }
+  DEB_RETURN() << DEB_VAR1(curr_image_type);
 }
 
 void DetInfoCtrlObj::setCurrImageType(ImageType curr_image_type)
