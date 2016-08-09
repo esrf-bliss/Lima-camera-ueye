@@ -84,8 +84,8 @@ are supported by the SDK. **Video** and Binning are available.
 * HwVideo
 
   The prosilica cameras are pure video device, so video format for image are supported:
-   For color cameras, 
-
+  
+  **For color cameras ONLY**
    - BAYER_RG8
    - BAYER_RG16
    - BAYER_BG8
@@ -93,12 +93,11 @@ are supported by the SDK. **Video** and Binning are available.
    - RGB24
    - YUV422
    
-   For monochrome cameras,
+  **Color and Monochrome cameras**
+   - Y8   
+   - Y16   
 
-    - Y8   
-    - Y16   
-
-  Use get/setVideoMode() on video object for video format.
+  Use get/setMode() methods of the *video* object (i.e. CtControl::video()) to read or set the format.
 
 * HwBin 
 
@@ -106,7 +105,7 @@ are supported by the SDK. **Video** and Binning are available.
 
 Configuration
 ``````````````
-See the sdk README provide in the ueye module
+See the sdk README in camera/ueye/sdk/ directory.
 
 How to use
 ````````````
