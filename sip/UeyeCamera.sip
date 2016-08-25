@@ -36,5 +36,7 @@ namespace Ueye
     void stopAcq();
     int getNbAcquiredFrames() const;
     void getStatus(HwInterface::StatusType& status);
+    double getGain() const;
+    void setGain(double aGain);
   };
 };
