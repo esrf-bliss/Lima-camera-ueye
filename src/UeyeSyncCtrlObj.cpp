@@ -51,7 +51,7 @@ bool SyncCtrlObj::checkTrigMode(TrigMode trig_mode)
       return (supported_modes & IS_SET_TRIGGER_SOFTWARE) > 0;
     case ExtTrigSingle:
     case ExtTrigMult:
-      return (supported_modes & IS_SET_TRIGGER_HI_LO) > 0;
+      return (supported_modes & IS_SET_TRIGGER_LO_HI) > 0;
     default:
       return false;
     }
@@ -71,7 +71,7 @@ void SyncCtrlObj::setTrigMode(TrigMode trig_mode)
       break;
     case ExtTrigSingle:
     case ExtTrigMult:
-      mode = IS_SET_TRIGGER_HI_LO;
+      mode = IS_SET_TRIGGER_LO_HI;
       break;
     default:
       THROW_HW_ERROR(NotSupported) << "Trigger type not supported";
