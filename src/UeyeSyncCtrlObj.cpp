@@ -151,8 +151,8 @@ void SyncCtrlObj::getValidRanges(ValidRangesType& valid_ranges)
   if(IS_SUCCESS != is_Exposure(m_cam->m_cam_id,IS_EXPOSURE_CMD_GET_EXPOSURE_RANGE,
 			       ranges,sizeof(ranges)))
     THROW_HW_ERROR(Error) << "Can't get exposure ranges";
-  valid_ranges.min_exp_time = ranges[0];
-  valid_ranges.max_exp_time = ranges[1];
+  valid_ranges.min_exp_time = ranges[0]*1e-3;
+  valid_ranges.max_exp_time = ranges[1]*1e-3;
   valid_ranges.min_lat_time = 0.; // Don't know
   valid_ranges.max_lat_time = 0.; // Don't know
   
