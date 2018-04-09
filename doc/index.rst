@@ -1,12 +1,13 @@
 .. _camera-ueye:
 
 Ueye
--------
+----
+
 .. image:: ids.jpg
 .. image:: ueye.jpg
 
-Intoduction
-```````````
+Introduction
+````````````
 Industrial Cameras for digital imaging and visualization (USB,GigE).
 
 home site: http://www.ids-imaging.com/
@@ -14,49 +15,25 @@ home site: http://www.ids-imaging.com/
 Installation & Module configuration
 ````````````````````````````````````
 
--  follow first the steps for the linux installation :ref:`linux_installation`
+First, you have to install the Ueye SDK. See the sdk README provide in the ueye module
 
-Previously to this you have to install the Ueye SDK.
-See the sdk README provide in the ueye module
-
-Ueye python module need at least the lima core module.
-
-The minimum configuration file is *config.inc* :
+Then, follow the generic instructions in :ref:`build_installation`. If using CMake directly, add the following flag:
 
 .. code-block:: sh
 
-  COMPILE_CORE=1
-  COMPILE_SIMULATOR=0
-  COMPILE_SPS_IMAGE=1
-  COMPILE_ESPIA=0
-  COMPILE_FRELON=0
-  COMPILE_MAXIPIX=0
-  COMPILE_PILATUS=0
-  COMPILE_BASLER=0
-  COMPILE_PROSILICA=0
-  COMPILE_ROPERSCIENTIFIC=0
-  COMPILE_MYTHEN=0
-  COMPILE_ADSC=0
-  COMPILE_UEYE=1
-  COMPILE_CBF_SAVING=0
-  COMPILE_NXS_SAVING=0
-  export COMPILE_CORE COMPILE_SPS_IMAGE COMPILE_SIMULATOR \
-         COMPILE_ESPIA COMPILE_FRELON COMPILE_MAXIPIX COMPILE_PILATUS \
-       COMPILE_BASLER COMPILE_PROSILICA COMPILE_ROPERSCIENTIFIC COMPILE_ADSC \
-       COMPILE_MYTHEN COMPILE_UEYE COMPILE_CBF_SAVING COMPILE_NXS_SAVING
+ -DLIMACAMERA_UEYE=true
 
--  start the compilation :ref:`linux_compilation`
-
--  finally for the Tango server installation :ref:`tango_installation`
+For the Tango server installation, refers to :ref:`tango_installation`.
 
 Initialisation and Capabilities
 ````````````````````````````````
 
+Implementing a new plugin for new detector is driven by the LIMA framework but the developer has some freedoms to choose which standard and specific features will be made available. This section is supposed to give you the correct information regarding how the camera is exported within the LIMA framework.
+
 Camera initialisation
 ......................
 
-The camera will be initialized   by creating a Ueye::Camera object.  The Camera contructor
-sets the camera with default parameters, only the video address (e.g. 0) of the camera is mandatory.
+The camera will be initialized by creating a :cpp:class:`Ueye::Camera` object. The contructor sets the camera with default parameters, only the video address (e.g. 0) of the camera is mandatory.
 
 Std capabilites
 ................
@@ -65,7 +42,7 @@ This plugin has been implement in respect of the mandatory capabilites but with 
 are due to the camera and SDK features. Only restriction on capabilites are documented here.
 
 * HwDetInfo
-  
+
   getCurrImageType/getDefImageType(): it can change if the video mode change (see HwVideo capability).
 
   setCurrImageType(): It only supports Bpp8 and Bpp16.
@@ -73,18 +50,17 @@ are due to the camera and SDK features. Only restriction on capabilites are docu
 * HwSync
 
   get/setTrigMode(): the only supported mode are IntTrig, IntTrigMult ExtTrigSingle and ExtTrigMult.
-  
-  
 
 Optional capabilites
-........................
+....................
+
 In addition to the standard capabilities, we make the choice to implement some optional capabilities which
 are supported by the SDK. **Video** and Binning are available.
 
 * HwVideo
 
   The prosilica cameras are pure video device, so video format for image are supported:
-  
+
   **For color cameras ONLY**
    - BAYER_RG8
    - BAYER_RG16
@@ -92,23 +68,25 @@ are supported by the SDK. **Video** and Binning are available.
    - BAYER_BG16
    - RGB24
    - YUV422
-   
+
   **Color and Monochrome cameras**
-   - Y8   
-   - Y16   
+   - Y8
+   - Y16
 
   Use get/setMode() methods of the *video* object (i.e. CtControl::video()) to read or set the format.
 
-* HwBin 
+* HwBin
 
   There is no restriction for the binning up to the maximum size.
 
 Configuration
-``````````````
-See the sdk README in camera/ueye/sdk/ directory.
+`````````````
+
+See the SDK ``README`` in ``camera/ueye/sdk/`` directory.
 
 How to use
-````````````
+``````````
+
 A python code example  for testing your camera:
 
 .. code-block:: python
@@ -128,7 +106,7 @@ A python code example  for testing your camera:
 
 
   # set video  and test video, supposing we have a color camera !!
-  # 
+  #
 
   video=ct.video()
   video.setMode(Core.YUV422)
@@ -138,7 +116,7 @@ A python code example  for testing your camera:
   video_img = video.getLastImage()
 
 
-  # set and test acquisition 
+  # set and test acquisition
   #
 
   # setting new file parameters and autosaving mode
@@ -153,7 +131,7 @@ A python code example  for testing your camera:
   saving.setParameters(pars)
 
   acq.setAcqExpoTime(0.1)
-  acq.setNbImages(10) 
+  acq.setNbImages(10)
   ct.prepareAcq()
   ct.startAcq()
 
@@ -162,7 +140,6 @@ A python code example  for testing your camera:
   while lastimg !=9:
     time.sleep(0.1)
     lastimg = ct.getStatus().ImageCounters.LastImageReady
- 
+
   # read the first image
   im0 = ct.ReadImage(0)
-
