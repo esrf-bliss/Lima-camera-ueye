@@ -134,8 +134,6 @@ Camera::Camera(int addresse) :
     }
 
   double pval1, pval2;
-  int errno;
-  char *errstr;
   if (IS_SUCCESS != is_SetAutoParameter (m_cam_id, IS_GET_ENABLE_AUTO_GAIN, &pval1, &pval2))
 	  DEB_ALWAYS() << "Failed to get auto gain control setting";
   else
@@ -153,8 +151,10 @@ Camera::Camera(int addresse) :
   pval1 = 1;
   if (IS_SUCCESS != is_SetAutoParameter (m_cam_id, IS_SET_ENABLE_AUTO_FRAMERATE, &pval1, &pval2))
   {
-	  is_GetError (m_cam_id, &errno, &errstr);
-	  DEB_ALWAYS() << "Failed to set auto frame rate control: " << errstr;
+    int placeholder;
+    char *errstr;
+    is_GetError (m_cam_id, &placeholder, &errstr);
+    DEB_ALWAYS() << "Failed to set auto frame rate control: " << errstr;
   }
   DEB_ALWAYS() << DEB_VAR4(m_sensor_info.nMaxWidth,
 			  m_sensor_info.nMaxHeight,
