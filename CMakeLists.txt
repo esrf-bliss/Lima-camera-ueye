@@ -56,7 +56,7 @@ if (CAMERA_MASTER_PROJECT)
 endif()
 
 # CMake additional macros
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${LIMA_CMAKE_INCLUDE_DIRS} ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${LIMA_CMAKE_INCLUDE_DIRS} ${CMAKE_MODULE_PATH})
 
 # Set version
 include(project_version)
@@ -109,7 +109,7 @@ generate_export_header(ueye)
 # Set version and output name
 set_target_properties(ueye PROPERTIES
   OUTPUT_NAME "lima${PROJECT_NAME_LOWER}"
-  VERSION "${VERSION}"
+  VERSION "${PROJECT_VERSION}"
   SOVERSION "${PACKAGE_VERSION_MAJOR}.${PACKAGE_VERSION_MINOR}")
 
 target_include_directories(ueye
